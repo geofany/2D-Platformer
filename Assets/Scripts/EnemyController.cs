@@ -1,9 +1,15 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class EnemyController : MonoBehaviour
 {
+    Rigidbody2D rigid;
+    Animator anim;
+    public int HP = 1;
+    bool isDie = false;
+    public static int EnemyKilled = 0;
     public bool isGrounded = false;
     public bool isFacingRight = false;
     public Transform batas1;
@@ -13,28 +19,34 @@ public class EnemyController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+       anim = GetComponent<Animator>();
+       rigid = GetComponent<Rigidbody2D>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (isFacingRight)
+        if (isGrounded && !isDie)
         {
-            MoveRight();
-        }
-        else
-        {
-            MoveLeft();
-        }
+            if (isFacingRight)
+            {
+                MoveRight();
+            }
+            else
+            {
+                MoveLeft();
+            }
 
-        if (transform.position.x >= batas2.position.x && isFacingRight)
-        {
-            Flip();
-        } else if (transform.position.x <= batas1.position.x && !isFacingRight)
-        {
-            Flip();
+            if (transform.position.x >= batas2.position.x && isFacingRight)
+            {
+                Flip();
+            }
+            else if (transform.position.x <= batas1.position.x && !isFacingRight)
+            {
+                Flip();
+            }
         }
+        
     }
 
     void OnCollisionEnter2D(Collision2D col)
@@ -89,5 +101,26 @@ public class EnemyController : MonoBehaviour
         theScale.x *= -1;
         transform.localScale = theScale;
         isFacingRight = !isFacingRight;
+    }
+
+    void TakeDamage(int damage)
+    {
+        HP -= damage;
+        if (HP <= 0)
+        {
+            isDie = true;
+            rigid.velocity = Vector2.zero;
+            anim.SetBool("IsDie", true);
+            Destroy(this.gameObject, 2);
+            //Data.score += 20;
+            EnemyKilled++;
+
+            if(EnemyKilled == 3)
+            {
+                SceneManager.LoadScene("Game Over");
+            }
+
+
+        }
     }
 }
